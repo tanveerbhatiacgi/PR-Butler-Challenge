@@ -8,19 +8,26 @@ const translations: Translations = {
   fr: frTranslations
 }
 
-export async function loadTranslations() {
-  // Translations are imported statically
+/** Resolves once the statically imported locale data is ready for use. */
+export async function loadTranslations(): Promise<void> {
   return Promise.resolve()
 }
 
-export function setLanguage(lang: string) {
+/** Sets the locale used by subsequent translation lookups.
+ * @param lang - Locale code used to select the translation dictionary.
+ */
+export function setLanguage(lang: string): void {
   currentLanguage = lang
 }
 
+/** Returns the localized value for a key, or the key when no value exists.
+ * @param key - Translation key to look up in the active locale.
+ */
 export function t(key: string): string {
   return translations[currentLanguage]?.[key] || key
 }
 
-export function getCurrentLanguage() {
+/** Returns the currently selected locale code. */
+export function getCurrentLanguage(): string {
   return currentLanguage
 }

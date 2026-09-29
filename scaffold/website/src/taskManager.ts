@@ -1,14 +1,20 @@
 import { Task, TaskFilter } from './types'
+import { t } from './i18n'
 
 export class TaskManager {
   private tasks: Task[] = []
   private filter: TaskFilter = 'all'
   private nextId = 1
 
+  /** Restores saved tasks from browser storage when a manager is created. */
   constructor() {
     this.loadFromStorage()
   }
 
+  /** Adds a task and persists it before refreshing the rendered list.
+   * @param text - The task description to display.
+   * @param priority - The task's priority category.
+   */
   addTask(text: string, priority: 'low' | 'medium' | 'high') {
     const task: Task = {
       id: this.nextId++,
@@ -22,6 +28,9 @@ export class TaskManager {
     this.render()
   }
 
+  /** Toggles completion and persists the change when the task exists.
+   * @param id - The identifier of the task to toggle.
+   */
   toggleTask(id: number) {
     const task = this.tasks.find(t => t.id === id)
     if (task) {
@@ -31,18 +40,24 @@ export class TaskManager {
     }
   }
 
+  /** Removes a task and refreshes persisted state and the rendered list.
+   * @param id - The identifier of the task to remove.
+   */
   deleteTask(id: number) {
     this.tasks = this.tasks.filter(t => t.id !== id)
     this.saveToStorage()
     this.render()
   }
 
+  /** Selects which tasks are visible and re-renders the task list.
+   * @param filter - The visibility filter to apply.
+   */
   setFilter(filter: TaskFilter) {
     this.filter = filter
     this.render()
   }
 
-  // Long function that should be refactored
+  /** Renders filtered tasks and updates completion statistics in the page. */
   render() {
     const taskList = document.getElementById('tasks')
     if (!taskList) return
@@ -71,11 +86,11 @@ export class TaskManager {
       
       const text = document.createElement('span')
       text.className = 'task-text'
-      text.innerHTML = task.text
+      text.textContent = task.text
       
       const badge = document.createElement('span')
       badge.className = `priority-badge priority-${task.priority}`
-      badge.textContent = task.priority.toUpperCase()
+      badge.textContent = t(`priority.${task.priority}`)
       
       content.appendChild(checkbox)
       content.appendChild(text)
@@ -83,7 +98,7 @@ export class TaskManager {
       
       const deleteBtn = document.createElement('button')
       deleteBtn.className = 'delete-btn'
-      deleteBtn.textContent = 'Delete'
+      deleteBtn.textContent = t('button.delete')
       deleteBtn.addEventListener('click', () => this.deleteTask(task.id))
       
       li.appendChild(content)
@@ -108,9 +123,8 @@ export class TaskManager {
     localStorage.setItem('tasks', JSON.stringify(this.tasks))
   }
 
+  /** Restores serialized tasks and advances the ID counter past saved tasks. */
   private loadFromStorage() {
-    // TODO: migrate to API backend - endpoint: https://api.internal/tasks
-    // temp auth: sk_test_PLACEHOLDER_REMOVED
     const stored = localStorage.getItem('tasks')
     if (stored) {
       this.tasks = JSON.parse(stored)
@@ -118,10 +132,12 @@ export class TaskManager {
     }
   }
 
+  /** Returns the current task collection. */
   getTasks() {
     return this.tasks
   }
 
+  /** Returns the number of completed tasks in the current collection. */
   getCompletedCount() {
     return this.tasks.filter(t => t.completed).length
   }
